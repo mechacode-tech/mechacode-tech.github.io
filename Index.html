@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Agriculture Dashboard</title>
+  <style>
+    body {
+      background-color: #d0f0c0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #logo {
+      width: 200px;
+      margin-top: 20px;
+    }
+    #connect-btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      font-size: 16px;
+      margin: 20px auto;
+      display: block;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    #connect-btn:hover {
+      background-color: #45a049;
+    }
+    .data-container {
+      margin: 20px;
+      display: none;
+    }
+    .sensor {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+    .bar {
+      height: 20px;
+      width: 100px;
+      margin: 5px auto;
+    }
+    .pump-status {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Home Page -->
+  <div id="home-page">
+    <img src="MLogo.jpg" id="logo" alt="Logo">
+    <h1>Crop Connect</h1>
+    <button id="connect-btn">Connect to Bluetooth</button>
+  </div>
+  
+  <!-- Data Page (Initially hidden) -->
+  <div class="data-container" id="data-container">
+    <h2>Sensor Data</h2>
+    
+    <h3>Soil Moisture Sensors</h3>
+    <div id="moisture-1" class="sensor">Soil Moisture Sensor 1: --% | Pump: <span id="pump-1" class="pump-status">OFF</span></div>
+    <div id="moisture-2" class="sensor">Soil Moisture Sensor 2: --% | Pump: <span id="pump-2" class="pump-status">OFF</span></div>
+    <div id="moisture-3" class="sensor">Soil Moisture Sensor 3: --% | Pump: <span id="pump-3" class="pump-status">OFF</span></div>
+    
+    <h3>NPK Sensor</h3>
+    <div id="nitrogen" class="sensor">Nitrogen: --</div>
+    <div id="phosphorus" class="sensor">Phosphorus: --</div>
+    <div id="potassium" class="sensor">Potassium: --</div>
+
+    <div class="sensor">Nitrogen Level:
+      <div id="nitrogen-bar" class="bar" style="background-color: green;"></div>
+    </div>
+    <div class="sensor">Phosphorus Level:
+      <div id="phosphorus-bar" class="bar" style="background-color: green;"></div>
+    </div>
+    <div class="sensor">Potassium Level:
+      <div id="potassium-bar" class="bar" style="background-color: green;"></div>
+    </div>
+  </div>
+
+  <script>
+    const connectBtn = document.getElementById('connect-btn');
+    const dataContainer = document.getElementById('data-container');
+    const homePage = document.getElementById('home-page');
+    
+    connectBtn.addEventListener('click', () => {
+      navigator.bluetooth.requestDevice({
+        acceptAllDevices: true
+      })
+      .then(device => {
+        console.log('Connected to device:', device.name);
+        return device.gatt.connect();
+      })
+      .then(server => {
+        console.log('GATT server connected');
+        homePage.style.display = 'none';
+        dataContainer.style.display = 'block';
+
+        setInterval(() => {
+          const nitrogenLevel = Math.floor(Math.random() * 100);
+          const phosphorusLevel = Math.floor(Math.random() * 100);
+          const potassiumLevel = Math.floor(Math.random() * 100);
+          const moisture1 = Math.floor(Math.random() * 100);
+          const moisture2 = Math.floor(Math.random() * 100);
+          const moisture3 = Math.floor(Math.random() * 100);
+
+          const pump1 = moisture1 < 30 ? 'ON' : 'OFF';
+          const pump2 = moisture2 < 30 ? 'ON' : 'OFF';
+          const pump3 = moisture3 < 30 ? 'ON' : 'OFF';
+
+          document.getElementById('nitrogen').innerText = `Nitrogen: ${nitrogenLevel}%`;
+          document.getElementById('phosphorus').innerText = `Phosphorus: ${phosphorusLevel}%`;
+          document.getElementById('potassium').innerText = `Potassium: ${potassiumLevel}%`;
+
+          document.getElementById('moisture-1').innerText = `Soil Moisture Sensor 1: ${moisture1}% | Pump: ${pump1}`;
+          document.getElementById('moisture-2').innerText = `Soil Moisture Sensor 2: ${moisture2}% | Pump: ${pump2}`;
+          document.getElementById('moisture-3').innerText = `Soil Moisture Sensor 3: ${moisture3}% | Pump: ${pump3}`;
+
+          updateBar('nitrogen-bar', nitrogenLevel);
+          updateBar('phosphorus-bar', phosphorusLevel);
+          updateBar('potassium-bar', potassiumLevel);
+        }, 2000); 
+      })
+      .catch(error => {
+        console.error('Error connecting to Bluetooth device:', error);
+      });
+    });
+
+    function updateBar(barId, level) {
+      const bar = document.getElementById(barId);
+      bar.style.width = `${level}%`;
+
+      if (level > 60) {
+        bar.style.backgroundColor = 'green';
+      } else if (level > 30) {
+        bar.style.backgroundColor = 'yellow';
+      } else {
+        bar.style.backgroundColor = 'red';
+      }
+    }
+  </script>
+</body>
+</html>
